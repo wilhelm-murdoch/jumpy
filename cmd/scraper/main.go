@@ -10,7 +10,10 @@ import (
 	"github.com/wilhelm-murdoch/jumpy/cmd/scraper/models"
 )
 
-const RootUrl = "https://wheresthejump.com/full-movie-list/"
+const (
+	RootUrl = "https://wheresthejump.com/full-movie-list/"
+	BaseDir = "../.."
+)
 
 func main() {
 	feed, err := library.GetMovieListFromUrl(RootUrl)
@@ -68,7 +71,7 @@ func main() {
 
 				feed.Add(&movie)
 
-				err = feed.Save(fmt.Sprintf("../../build/json/movies/%s.json", movie.Id), movie)
+				err = feed.Save(fmt.Sprintf("dist/movies/%s.json", movie.Id), movie)
 				if err != nil {
 					logger.Error(err.Error())
 				}
@@ -83,13 +86,12 @@ func main() {
 		chanFinished <- true
 	}
 
-	feed.Save("json/movies.json", feed.Movies)
-
 	tags := feed.GetDistinctTags()
 	for _, t := range tags {
 		filtered := feed.FilterMoviesByTag(&t)
-		feed.Save(fmt.Sprintf("../../build/json/tags/%s.json", t.Id), filtered)
+		feed.Save(fmt.Sprintf("dist/tags/%s.json", t.Id), filtered)
 	}
 
-	feed.Save("../../build/json/tags.json", tags)
+	feed.Save("dist/movies.json", feed.Movies)
+	feed.Save("dist/tags.json", tags)
 }
