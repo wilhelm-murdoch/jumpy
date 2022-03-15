@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"fmt"
@@ -6,9 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/wilhelm-murdoch/jumpscare-api/tag"
-	"github.com/wilhelm-murdoch/jumpscare-api/util"
 
 	"github.com/gosimple/slug"
 )
@@ -25,7 +22,7 @@ type Movie struct {
 	DetailsUrl     string      `json:"details_url,omitempty"`
 	Directors      []string    `json:"directors,omitempty"`
 	JumpScares     []JumpScare `json:"jump_scares,omitempty"`
-	Tags           []tag.Tag   `json:"tags,omitempty"`
+	Tags           []Tag       `json:"tags,omitempty"`
 	Reviews        []Review    `json:"reviews,omitempty"`
 	ContentRating  string      `json:"content_rating,omitempty"`
 }
@@ -39,16 +36,11 @@ func NewMovie(title string, release int, url string) *Movie {
 	}
 }
 
-func (m *Movie) Save(path string) error {
-	return util.WriteJsonToFile(path, m)
-}
-
 func (m *Movie) SaveSrt(path string) error {
-	var output string
 	for _, jumpscare := range m.JumpScares {
 		fmt.Println(jumpscare)
 	}
-	return util.WriteJsonToFile(path, output)
+	return nil
 }
 
 func (m *Movie) AddDirector(director string) {
@@ -71,7 +63,7 @@ func (m *Movie) AddJumpScare(timestamp string, spoiler string, major bool) {
 }
 
 func (m *Movie) AddTag(name string) {
-	m.Tags = append(m.Tags, tag.Tag{
+	m.Tags = append(m.Tags, Tag{
 		Id:   slug.Make(name),
 		Name: strings.Trim(name, " "),
 	})
@@ -82,6 +74,15 @@ func (m *Movie) AddReview(name string, url string) {
 		Name: name,
 		Url:  url,
 	})
+}
+
+func (m *Movie) HasTag(tag *Tag) bool {
+	for _, t := range m.Tags {
+		if t.Id == tag.Id {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *Movie) SetContentRating(rating string) {
