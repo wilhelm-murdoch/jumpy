@@ -34,7 +34,7 @@ func NewMovie(title string, release int, url string) *Movie {
 		Title:       title,
 		ReleaseYear: release,
 		SourceUrl:   url,
-		DetailsUrl:  fmt.Sprintf("/movies/%s.json", id),
+		DetailsUrl:  fmt.Sprintf("https://jumpy.wilhelm.codes/movies/%s.json", id),
 	}
 }
 
@@ -70,7 +70,7 @@ func (m *Movie) AddTag(name string) {
 	m.Tags = append(m.Tags, Tag{
 		Id:         id,
 		Name:       strings.Trim(name, " "),
-		DetailsUrl: fmt.Sprintf("/tags/%s.json", id),
+		DetailsUrl: fmt.Sprintf("https://jumpy.wilhelm.codes/tags/%s.json", id),
 	})
 }
 
