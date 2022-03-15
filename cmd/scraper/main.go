@@ -5,9 +5,9 @@ import (
 	"math"
 	"sync"
 
-	"github.com/wilhelm-murdoch/jumpscare-api/cmd/scraper/library"
-	"github.com/wilhelm-murdoch/jumpscare-api/cmd/scraper/logger"
-	"github.com/wilhelm-murdoch/jumpscare-api/cmd/scraper/models"
+	"github.com/wilhelm-murdoch/jumpy/cmd/scraper/library"
+	"github.com/wilhelm-murdoch/jumpy/cmd/scraper/logger"
+	"github.com/wilhelm-murdoch/jumpy/cmd/scraper/models"
 )
 
 const RootUrl = "https://wheresthejump.com/full-movie-list/"

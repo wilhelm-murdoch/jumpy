@@ -1,4 +1,4 @@
-module github.com/wilhelm-murdoch/jumpscare-api
+module github.com/wilhelm-murdoch/jumpy
 
 go 1.17
 

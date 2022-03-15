@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wilhelm-murdoch/jumpscare-api/cmd/scraper/logger"
-	"github.com/wilhelm-murdoch/jumpscare-api/cmd/scraper/models"
+	"github.com/wilhelm-murdoch/jumpy/cmd/scraper/logger"
+	"github.com/wilhelm-murdoch/jumpy/cmd/scraper/models"
 
 	"github.com/PuerkitoBio/goquery"
 )
