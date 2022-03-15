@@ -28,11 +28,13 @@ type Movie struct {
 }
 
 func NewMovie(title string, release int, url string) *Movie {
+	id := slug.Make(fmt.Sprintf("%s-%d", title, release))
 	return &Movie{
-		Id:          slug.Make(fmt.Sprintf("%s-%d", title, release)),
+		Id:          id,
 		Title:       title,
 		ReleaseYear: release,
 		SourceUrl:   url,
+		DetailsUrl:  fmt.Sprintf("/movies/%s.json", id),
 	}
 }
 
@@ -63,9 +65,12 @@ func (m *Movie) AddJumpScare(timestamp string, spoiler string, major bool) {
 }
 
 func (m *Movie) AddTag(name string) {
+	id := slug.Make(name)
+
 	m.Tags = append(m.Tags, Tag{
-		Id:   slug.Make(name),
-		Name: strings.Trim(name, " "),
+		Id:         id,
+		Name:       strings.Trim(name, " "),
+		DetailsUrl: fmt.Sprintf("/tags/%s.json", id),
 	})
 }
 
