@@ -65,9 +65,12 @@ func (m *Movie) AddJumpScare(timestamp string, spoiler string, major bool) {
 }
 
 func (m *Movie) AddTag(name string) {
+	id := slug.Make(name)
+
 	m.Tags = append(m.Tags, Tag{
-		Id:   slug.Make(name),
-		Name: strings.Trim(name, " "),
+		Id:         id,
+		Name:       strings.Trim(name, " "),
+		DetailsUrl: fmt.Sprintf("/tags/%s.json", id),
 	})
 }
 

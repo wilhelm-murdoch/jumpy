@@ -1,9 +1,10 @@
 package models
 
 type Tag struct {
-	Id     string  `json:"id"`
-	Name   string  `json:"name"`
-	Movies []Movie `json:"movies,omitempty"`
+	Id         string  `json:"id"`
+	Name       string  `json:"name"`
+	Movies     []Movie `json:"movies,omitempty"`
+	DetailsUrl string  `json:"details_url,omitempty"`
 }
 
 func (t *Tag) AddMovie(movie *Movie) bool {
