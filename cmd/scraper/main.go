@@ -76,7 +76,7 @@ func main() {
 					logger.Error(err.Error())
 				}
 
-				logger.Info("... generated: %s.json", movie.Id)
+				logger.Info("... generated movie: dist/movies/%s.json", movie.Id)
 				defer urlProcessingWaitGroup.Done()
 			}(movie)
 		}
@@ -87,11 +87,18 @@ func main() {
 	}
 
 	tags := feed.GetDistinctTags()
+	logger.Info("processing %d distinct tags and assigning movies", len(tags))
 	for _, t := range tags {
 		filtered := feed.FilterMoviesByTag(&t)
+		logger.Info("... generated tag: dist/tags/%s.json", t.Id)
 		feed.Save(fmt.Sprintf("dist/tags/%s.json", t.Id), filtered)
 	}
 
 	feed.Save("dist/movies.json", feed.Movies)
+	logger.Info("... generated movie index: dist/movies.json")
+
 	feed.Save("dist/tags.json", tags)
+	logger.Info("... generated tag index: dist/tags.json")
+
+	logger.Info("all done; exiting ...")
 }
