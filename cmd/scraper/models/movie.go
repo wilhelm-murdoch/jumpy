@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,20 +12,22 @@ import (
 )
 
 type Movie struct {
-	Id             string      `json:"id"`
-	Title          string      `json:"title"`
-	JumpScareCount int         `json:"jump_scare_count,omitempty"`
-	Runtime        int         `json:"runtime,omitempty"`
-	Synopsis       string      `json:"synopsis,omitempty"`
-	ReleaseYear    int         `json:"release_year,omitempty"`
-	CoverUrl       string      `json:"cover_url,omitempty"`
-	SourceUrl      string      `json:"source_url"`
-	DetailsUrl     string      `json:"details_url,omitempty"`
-	Directors      []string    `json:"directors,omitempty"`
-	JumpScares     []JumpScare `json:"jump_scares,omitempty"`
-	Tags           []Tag       `json:"tags,omitempty"`
-	Reviews        []Review    `json:"reviews,omitempty"`
-	ContentRating  string      `json:"content_rating,omitempty"`
+	Id                      string      `json:"id"`
+	Title                   string      `json:"title"`
+	JumpScareCount          int         `json:"jump_scare_count,omitempty"`
+	Runtime                 int         `json:"runtime,omitempty"`
+	Synopsis                string      `json:"synopsis,omitempty"`
+	ReleaseYear             int         `json:"release_year,omitempty"`
+	CoverUrl                string      `json:"cover_url,omitempty"`
+	SourceUrl               string      `json:"source_url"`
+	DetailsUrl              string      `json:"details_url,omitempty"`
+	Directors               []string    `json:"directors,omitempty"`
+	JumpScares              []JumpScare `json:"jump_scares,omitempty"`
+	Tags                    []Tag       `json:"tags,omitempty"`
+	Reviews                 []Review    `json:"reviews,omitempty"`
+	ContentRating           string      `json:"content_rating,omitempty"`
+	JumpScareSrtUrl         string      `json:"jump_scare_srt_url,omitempty"`
+	JumpScareSpoilersSrtUrl string      `json:"jump_scare_spoilers_srt_url,omitempty"`
 }
 
 func NewMovie(title string, release int, url string) *Movie {
@@ -38,10 +41,43 @@ func NewMovie(title string, release int, url string) *Movie {
 	}
 }
 
-func (m *Movie) SaveSrt(path string) error {
-	for _, jumpscare := range m.JumpScares {
-		fmt.Println(jumpscare)
+func (m *Movie) SaveSrt(path string, spoilers bool) error {
+	var output []string
+	var prefix string = "Minor "
+
+	subtitle := "jump scare ahead!"
+	for i, j := range m.JumpScares {
+		if spoilers {
+			subtitle = "- " + j.Spoiler
+		}
+
+		if j.Major {
+			prefix = "Major "
+		}
+
+		output = append(
+			output,
+			fmt.Sprint(i+1),
+			j.TimeStart+" --> "+j.TimeStop,
+			prefix+subtitle+"\n",
+		)
 	}
+
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	_, err = file.WriteString(strings.Join(output, "\n"))
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	m.JumpScareSrtUrl = fmt.Sprintf("https://jumpy.wilhelm.codes/movies/%s.srt", m.Id)
+	m.JumpScareSpoilersSrtUrl = fmt.Sprintf("https://jumpy.wilhelm.codes/movies/%s-spoilers.srt", m.Id)
+
 	return nil
 }
 

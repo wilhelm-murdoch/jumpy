@@ -72,6 +72,9 @@ func main() {
 
 				feed.Add(&movie)
 
+				movie.SaveSrt(fmt.Sprintf("dist/movies/%s-spoilers.srt", movie.Id), true)
+				movie.SaveSrt(fmt.Sprintf("dist/movies/%s.srt", movie.Id), false)
+
 				err = feed.Save(fmt.Sprintf("dist/movies/%s.json", movie.Id), movie)
 				if err != nil {
 					chanError <- err
