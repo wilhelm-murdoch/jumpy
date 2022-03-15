@@ -2,10 +2,9 @@ name: Run the scraper
 
 on:
  schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 0 * * *"
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -28,4 +27,3 @@ jobs:
           author_email: wilhelm@devilmayco.de
           message: "Scraping for the latest and greatest with Github Actions!"
           add: '-A'
-          ref: deploy
