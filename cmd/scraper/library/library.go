@@ -51,10 +51,10 @@ func GetMovieListFromUrl(url string) (*models.Feed, error) {
 	return feed, nil
 }
 
-func GetMovieDetailsFromUrl(movie *models.Movie) error {
+func GetMovieDetailsFromUrl(movie models.Movie) (models.Movie, error) {
 	document, err := GetDocumentFromUrl(movie.SourceUrl)
 	if err != nil {
-		return err
+		return movie, err
 	}
 
 	document.Find("div.inside-article").Each(func(i int, s *goquery.Selection) {
@@ -97,5 +97,5 @@ func GetMovieDetailsFromUrl(movie *models.Movie) error {
 		})
 	})
 
-	return nil
+	return movie, nil
 }

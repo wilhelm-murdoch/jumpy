@@ -16,16 +16,17 @@ const (
 )
 
 func main() {
-	feed, err := library.GetMovieListFromUrl(RootUrl)
-
+	summary, err := library.GetMovieListFromUrl(RootUrl)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 
+	feed := models.NewFeed()
+
 	const batchSize int = 25
 
 	shift := 0
-	numUrls := len(feed.Movies)
+	numUrls := len(summary.Movies)
 	numBatches := int(math.Ceil(float64(numUrls)/float64(batchSize))) - 1
 
 	logger.Info("processing %d urls in batches of %d each", numUrls, batchSize)
@@ -39,7 +40,7 @@ func main() {
 			limit = numUrls
 		}
 
-		currentBatch := feed.Movies[offset:limit]
+		currentBatch := summary.Movies[offset:limit]
 		shift += batchSize
 		chanError := make(chan error)
 		chanFinished := make(chan bool)
@@ -63,7 +64,7 @@ func main() {
 
 		for _, movie := range currentBatch {
 			go func(movie models.Movie) {
-				err := library.GetMovieDetailsFromUrl(&movie)
+				movie, err := library.GetMovieDetailsFromUrl(movie)
 				if err != nil {
 					chanError <- err
 					return
@@ -73,7 +74,8 @@ func main() {
 
 				err = feed.Save(fmt.Sprintf("dist/movies/%s.json", movie.Id), movie)
 				if err != nil {
-					logger.Error(err.Error())
+					chanError <- err
+					return
 				}
 
 				logger.Info("... generated movie: dist/movies/%s.json", movie.Id)
@@ -94,7 +96,7 @@ func main() {
 		feed.Save(fmt.Sprintf("dist/tags/%s.json", t.Id), filtered)
 	}
 
-	feed.Save("dist/movies.json", feed.Movies)
+	summary.Save("dist/movies.json", summary.Movies)
 	logger.Info("... generated movie index: dist/movies.json")
 
 	feed.Save("dist/tags.json", tags)
