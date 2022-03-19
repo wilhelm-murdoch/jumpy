@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 module github.com/wilhelm-murdoch/jumps.care
 
 go 1.18
+=======
+module github.com/wilhelm-murdoch/jumpy
+
+go 1.17
+>>>>>>> 10ca3a00fd444b2b467022701809091027ccaf25
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
