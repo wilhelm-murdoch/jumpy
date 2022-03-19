@@ -1,0 +1,29 @@
+name: Run the scraper
+
+on:
+ schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: deploy
+          
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Scrape
+        run: go run cmd/scraper/main.go
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: wilhelm-murdoch
+          author_email: wilhelm@devilmayco.de
+          message: "Scraping for the latest and greatest with Github Actions!"
+          add: '-A'
