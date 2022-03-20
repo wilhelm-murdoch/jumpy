@@ -1,12 +1,14 @@
 package library
 
 import (
+	"errors"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/wilhelm-murdoch/go-batch"
 	"github.com/wilhelm-murdoch/jumps.care/cmd/scraper/logger"
 	"github.com/wilhelm-murdoch/jumps.care/cmd/scraper/models"
 
@@ -18,26 +20,44 @@ func GetDocumentFromUrl(url string) (*goquery.Document, error) {
 		Timeout: 5 * time.Second,
 	}
 
-	response, err := client.Get(url)
-	if err != nil {
-		logger.Error(err.Error())
+	var backoff time.Duration
+
+	maxAttempts := 10
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		response, err := client.Get(url)
+		if err != nil {
+			break
+		}
+
+		switch response.StatusCode {
+		case 429:
+			if attempt >= maxAttempts {
+				logger.Warning("could not get url %s after %d attempts; skipping ...", url, attempt)
+				return goquery.NewDocumentFromReader(response.Body)
+			}
+
+			backoff = time.Duration(attempt) * time.Second
+			logger.Warning("got rate-limited on url %s; waiting another %d seconds", url, (backoff / time.Second))
+			time.Sleep(backoff)
+		case 200:
+			return goquery.NewDocumentFromReader(response.Body)
+		case 404:
+			logger.Warning("url %s could not be found; skipping ...", url)
+			return goquery.NewDocumentFromReader(response.Body)
+		}
+
+		defer response.Body.Close()
 	}
 
-	defer response.Body.Close()
-
-	if response.StatusCode != 200 {
-		logger.Error("status %d returned for: %s", response.StatusCode, url)
-	}
-
-	return goquery.NewDocumentFromReader(response.Body)
+	return nil, errors.New("this should not happen, but here we are")
 }
 
-func GetMovieListFromUrl(url string) (*models.Feed, error) {
-	feed := models.NewFeed()
+func GetMovieListFromUrl(url string) (batch.Iterator[models.Movie], error) {
+	iterator := batch.Iterator[models.Movie]{}
 
 	document, err := GetDocumentFromUrl(url)
 	if err != nil {
-		return feed, err
+		return iterator, err
 	}
 
 	document.Find("div.entry-content > table > tbody > tr").Each(func(i int, s *goquery.Selection) {
@@ -49,11 +69,11 @@ func GetMovieListFromUrl(url string) (*models.Feed, error) {
 			release, _ := strconv.Atoi(s.Find("td:nth-child(3)").Text())
 			movie := models.NewMovie(title, release, url)
 
-			feed.Push(movie)
+			iterator.Push(&movie)
 		}
 	})
 
-	return feed, nil
+	return iterator, nil
 }
 
 func GetMovieDetailsFromUrl(movie models.Movie) (models.Movie, error) {

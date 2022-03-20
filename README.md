@@ -19,12 +19,6 @@ I wanted
 
 
 ## Where?
-<<<<<<< HEAD
 The landing page is located [here](https://jumps.care/) with links to the following manifests:
 1. https://jumps.care/movies.json
 2. https://jumps.care/tags.json
-=======
-The landing page is located [here](https://jumpy.wilhelm.codes/) with links to the following manifests:
-1. https://jumpy.wilhelm.codes/movies.json
-2. https://jumpy.wilhelm.codes/tags.json
->>>>>>> 10ca3a00fd444b2b467022701809091027ccaf25

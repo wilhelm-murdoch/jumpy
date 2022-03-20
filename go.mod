@@ -1,14 +1,11 @@
-<<<<<<< HEAD
 module github.com/wilhelm-murdoch/jumps.care
 
 go 1.18
-=======
-module github.com/wilhelm-murdoch/jumpy
 
-go 1.17
->>>>>>> 10ca3a00fd444b2b467022701809091027ccaf25
+replace github.com/wilhelm-murdoch/go-batch => /Users/wilhelm/Development/github.com/wilhelm-murdoch/go-batch
 
 require (
+	github.com/wilhelm-murdoch/go-batch v1.0.0
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/gosimple/slug v1.12.0
 )

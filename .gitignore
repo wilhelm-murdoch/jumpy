@@ -1,2 +1,4 @@
 .envrc
 .DS_Store
+dist/**/*.json
+dist/images/covers

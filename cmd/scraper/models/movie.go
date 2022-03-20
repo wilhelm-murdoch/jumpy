@@ -20,13 +20,26 @@ type Movie struct {
 	Synopsis       string      `json:"synopsis,omitempty"`
 	ReleaseYear    int         `json:"release_year,omitempty"`
 	CoverUrl       string      `json:"cover_url,omitempty"`
-	SourceUrl      string      `json:"source_url"`
 	DetailsUrl     string      `json:"details_url,omitempty"`
 	Directors      []string    `json:"directors,omitempty"`
 	JumpScares     []JumpScare `json:"jump_scares,omitempty"`
 	Tags           []Tag       `json:"tags,omitempty"`
 	Reviews        []Review    `json:"reviews,omitempty"`
 	ContentRating  string      `json:"content_rating,omitempty"`
+	SourceUrl      string
+}
+
+type JumpScare struct {
+	TimeStart     string `json:"time_start"`
+	TimeStop      string `json:"time_stop"`
+	Spoiler       string `json:"spoiler"`
+	Major         bool   `json:"major"`
+	ScreenshotUrl bool   `json:"screenshot_url,omitempty"`
+}
+
+type Review struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
 }
 
 func NewMovie(title string, release int, url string) Movie {
@@ -85,6 +98,10 @@ func (m *Movie) HasTag(tag *Tag) bool {
 	return false
 }
 
+func (m *Movie) SetSynopsis(synopsis string) {
+	m.Synopsis = strings.Trim(strings.Replace(synopsis, "Synopsis: ", "", 1), " ")
+}
+
 func (m *Movie) SetContentRating(rating string) {
 	m.ContentRating = strings.Trim(strings.Replace(rating, "Rating: ", "", 1), " ")
 }
@@ -113,16 +130,4 @@ func (m *Movie) Save(path string, object interface{}) error {
 	defer file.Close()
 
 	return nil
-}
-
-type JumpScare struct {
-	TimeStart string `json:"time_start"`
-	TimeStop  string `json:"time_stop"`
-	Spoiler   string `json:"spoiler"`
-	Major     bool   `json:"major"`
-}
-
-type Review struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
 }

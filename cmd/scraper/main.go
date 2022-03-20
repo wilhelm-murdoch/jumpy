@@ -1,87 +1,78 @@
 package main
 
 // job retries; with limits, track retry attempts
-// return final result from processor.Execute
-// implement push pop each
-// update models to use generics where relevant
 // create "saver" interface with Feed | Movie types?
 // error types; retry, failed, etc ...
-// return completed jobs as a collection .each .push. .pop .map
+// create signal struct supporting various signals
+// convert Result struct to Result type
 
 import (
-	"fmt"
-	"math/rand"
-	"time"
+	"os"
 
-	"github.com/wilhelm-murdoch/jumps.care/cmd/scraper/processor"
+	"github.com/wilhelm-murdoch/go-batch"
+	"github.com/wilhelm-murdoch/jumps.care/cmd/scraper/handlers"
+	"github.com/wilhelm-murdoch/jumps.care/cmd/scraper/library"
+	"github.com/wilhelm-murdoch/jumps.care/cmd/scraper/logger"
 )
 
-// const (
-// 	RootUrl = "https://wheresthejump.com/full-movie-list/"
-// 	BaseDir = "../.."
-// )
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randSeq(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
-}
-
 func main() {
-	rand.Seed(time.Now().UnixNano())
-
-	var things []string
-	for i := 0; i < 10; i++ {
-		things = append(things, randSeq(15))
+	// Let's hit https://wheresthejump.com/ to get a list of all movies. This won't
+	// have all the information we need, but we can prime each record with some
+	// basic information.
+	summary, err := library.GetMovieListFromUrl("https://wheresthejump.com/full-movie-list/")
+	if err != nil {
+		logger.Error(err.Error())
 	}
 
-	ps := processor.NewProcessor(things)
-	results := ps.Execute(func(job *processor.Job[string]) (*processor.Job[string], error) {
-		fmt.Println("Processing:     ", job.Body)
-		job.Body += " edit"
-		return job, nil
+	os.Exit(0)
+
+	// Here we have a signal handler so we can listen to anything interesting as
+	// we process all the movies in batches.
+	sh := batch.SignalHandler(func(e error) {
+		logger.Warning(e.Error())
 	})
 
-	fmt.Println()
-	fmt.Println("Finished:")
-	res := processor.Results[string]{}
+	// Create a batch processor to scrape the target movie pages for more detailed
+	// information and return the results.
+	ps := batch.NewProcessor(summary.Data, sh)
+	ps.Execute(handlers.HandleMovieDetails)
 
-	res.Concat(results).Each(func(i int, j *processor.Job[string]) {
-		fmt.Println(j.Body)
-	})
+	// This is a bit janky at the moment. I'd like to just pass in the previous
+	// result set and pull the trigger, but unfortunately I'm being a bit lazy.
+	// So, I just rebuild a new slice of models.Movie sourced from the batch.Job
+	// set from the results.
+	// movies := batch.Iterator[models.Movie]{}
+	// results.Each(func(i int, j *batch.Job[models.Movie]) {
+	// 	logger.Info("... generated movie: dist/movies/%s.json", j.Body.Id)
+	// 	j.Body.Save(fmt.Sprintf("dist/movies/%s.json", j.Body.Id), j.Body)
+
+	// 	movies.Push(&j.Body)
+	// })
+
+	// Trigger a new batch processor to try to ingest a movie poster for each
+	// movie from https://www.movieposterdb.com/. Unfortunately, they go pretty
+	// heavy on the rate limiting, so each batch is only 5 jobs.
+	// ps = batch.NewProcessor(movies.Data, batch.BatchSize(5), sh)
+	// results = ps.Execute(handlers.HandleMoviePoster)
+
+	// full := batch.Iterator[models.Movie]{}
+	// results.Each(func(i int, j *batch.Job[models.Movie]) {
+	// 	full.Push(j.Body)
+	// })
+
+	// tags := full.GetDistinctTags()
+	// logger.Info("processing %d distinct tags and assigning movies", len(tags))
+	// for _, t := range tags {
+	// 	filtered := full.FilterMoviesByTag(&t)
+	// 	logger.Info("... generated tag: dist/tags/%s.json", t.Id)
+	// 	full.Save(fmt.Sprintf("dist/tags/%s.json", t.Id), filtered)
+	// }
+
+	// summary.Save("dist/movies.json", summary.Data)
+	// logger.Info("... generated movie index: dist/movies.json")
+
+	// full.Save("dist/tags.json", tags)
+	// logger.Info("... generated tag index: dist/tags.json")
+
+	// logger.Info("all done; exiting ...")
 }
-
-// func main() {
-// 	summary, err := library.GetMovieListFromUrl(RootUrl)
-// 	if err != nil {
-// 		logger.Error(err.Error())
-// 	}
-
-// 	ps := processor.NewProcessor(summary.Movies, 100)
-// 	ps.Execute(handlers.HandleMovieDetails)
-// }
-
-// movie.SaveSrt("dist"+fmt.Sprintf("/downloads/srt/%s-spoilers.srt", movie.Id), true)
-// logger.Info("... generated movie: dist/movies/%s.json", movie.Id)
-
-// movie.SaveSrt("dist"+fmt.Sprintf("/downloads/srt/%s.srt", movie.Id), false)
-// logger.Info("... generated movie: dist/movies/%s.json", movie.Id)
-// tags := feed.GetDistinctTags()
-// logger.Info("processing %d distinct tags and assigning movies", len(tags))
-// for _, t := range tags {
-// 	filtered := feed.FilterMoviesByTag(&t)
-// 	logger.Info("... generated tag: dist/tags/%s.json", t.Id)
-// 	feed.Save(fmt.Sprintf("dist/tags/%s.json", t.Id), filtered)
-// }
-
-// summary.Save("dist/movies.json", summary.Movies)
-// logger.Info("... generated movie index: dist/movies.json")
-
-// feed.Save("dist/tags.json", tags)
-// logger.Info("... generated tag index: dist/tags.json")
-
-// logger.Info("all done; exiting ...")
