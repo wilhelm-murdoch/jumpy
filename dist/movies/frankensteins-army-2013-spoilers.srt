@@ -1,0 +1,19 @@
+1
+00:12:04 --> 00:12:09
+Minor - The corpse comes alive for a second facing the soldier
+
+2
+00:31:50 --> 00:31:55
+Minor - One of the monsters attacks a soldier
+
+3
+00:32:29 --> 00:32:34
+Minor - The camera suddenly cuts to a monster
+
+4
+00:53:30 --> 00:53:35
+Major - A monster suddenly turns around facing the camera
+
+5
+01:00:12 --> 01:00:17
+Major - The monster in the corner that disappeared reappears from the side
